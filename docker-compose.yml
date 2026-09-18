@@ -1,0 +1,37 @@
+# Redpanda: a Kafka-API compatible broker with a built-in Schema Registry.
+#   Kafka API        -> localhost:9094
+#   Schema Registry  -> http://localhost:8084
+services:
+  redpanda:
+    image: redpandadata/redpanda:v24.3.11
+    container_name: redpanda-4414
+    command:
+      - redpanda
+      - start
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://localhost:9094
+      - --schema-registry-addr
+      - internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --pandaproxy-addr
+      - internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --rpc-addr
+      - redpanda:33145
+      - --advertise-rpc-addr
+      - redpanda:33145
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --memory
+      - 1G
+      - --overprovisioned
+    ports:
+      - "9094:19092"
+      - "8084:18081"
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
